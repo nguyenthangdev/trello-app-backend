@@ -16,8 +16,8 @@ const createNew = async (req, res, next) => {
     await correctCondition.validateAsync(req.body, {
       abortEarly: false
     })
-    // next()
-    res.status(StatusCodes.CREATED).json({ message: 'Create API V1' })
+    next()
+    // res.status(StatusCodes.CREATED).json({ message: 'Create API V1' })
   } catch (error) {
     res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
       errors: new Error(error).message
