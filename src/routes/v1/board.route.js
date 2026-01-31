@@ -9,4 +9,7 @@ Router.route('/')
     res.status(StatusCodes.OK).json({ message: 'Get API V1' })
   })
   .post(boardValidaton.createNew, boardController.createNew)
+Router.route('/:id')
+  .get(boardController.getDetails)
+  .put()
 export const boardRoute = Router
