@@ -1,25 +1,19 @@
 import Joi from 'joi'
 import { StatusCodes } from 'http-status-codes'
 import ApiError from '~/utils/ApiError'
-import { BOARD_TYPES } from '~/utils/constants'
+import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 
 const createNew = async (req, res, next) => {
   const correctCondition = Joi.object({
+    boardId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
+    columnId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
     title: Joi.string().required().min(3).max(50).trim().strict().messages({
       'any.required': 'Title is required',
       'string.empty': 'Title is not allowed to be empty',
       'string.min': 'Title length must be at least 3 characters long',
       'string.max': 'Title length must be less than or equal to 50 characters long',
       'string.trim': 'Title must not have leading or trailing whitespace'
-    }),
-    description: Joi.string().required().min(3).max(256).trim().strict().messages({
-      'any.required': 'Title is required',
-      'string.empty': 'Title is not allowed to be empty',
-      'string.min': 'Title length must be at least 3 characters long',
-      'string.max': 'Title length must be less than or equal to 256 characters long',
-      'string.trim': 'Title must not have leading or trailing whitespace'
-    }),
-    type: Joi.string().valid(...Object.values(BOARD_TYPES)).required()
+    })
   })
 
   try {
@@ -33,6 +27,6 @@ const createNew = async (req, res, next) => {
   }
 }
 
-export const boardValidaton = {
+export const cardValidaton = {
   createNew
 }
