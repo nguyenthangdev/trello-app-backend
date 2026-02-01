@@ -11,7 +11,6 @@ const createNew = async (reqBody) => {
       slug: slugify(reqBody.title)
     }
     const createdBoard = await boardModel.createNew(newBoard)
-    
     const getNewBoard = await boardModel.fineOneById(createdBoard.insertedId)
 
     return getNewBoard
