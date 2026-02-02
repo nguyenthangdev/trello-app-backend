@@ -3,6 +3,8 @@ import { boardModel } from '~/models/board.model'
 import ApiError from '~/utils/ApiError'
 import { StatusCodes } from 'http-status-codes'
 import { cloneDeep } from 'lodash'
+import { columnModel } from '~/models/column.model'
+import { cardModel } from '~/models/card.model'
 
 const createNew = async (reqBody) => {
   try {
@@ -32,7 +34,43 @@ const getDetails = async (boardId) => {
   } catch (error) { throw error }
 }
 
+const update = async (boardId, reqBody) => {
+  try {
+    const updateData = {
+      ...reqBody,
+      updatedAt: Date.now()
+    }
+    const updatedBoard = await boardModel.update(boardId, updateData)
+
+    return updatedBoard
+  } catch (error) { throw error }
+}
+
+const moveCardToDifferentColumn = async (reqBody) => {
+  try {
+    // Cập nhật mảng cardOrderIds của Column ban đầu chứa nó (tương dương việc xóa cái _id của Card ra khỏi mảng)
+    await columnModel.update(reqBody.prevColumnId, {
+      cardOrderIds: reqBody.prevCardOrderIds,
+      updatedAt: Date.now()
+    })
+
+    // Cập nhật mảng cardOrderIds của Column tiếp theo chứa nó (tương dương việc thêm cái _id của Card vào mảng)
+    await columnModel.update(reqBody.nextColumnId, {
+      cardOrderIds: reqBody.nextCardOrderIds,
+      updatedAt: Date.now()
+    })
+
+    // Cập nhật lại trường columnId mới của Card đã kéo
+    await cardModel.update(reqBody.currentCardId, {
+      columnId: reqBody.nextColumnId
+    })
+    return { updatedResult: 'Successfully' }
+  } catch (error) { throw error }
+}
+
 export const boardService = {
   createNew,
-  getDetails
+  getDetails,
+  update,
+  moveCardToDifferentColumn
 }

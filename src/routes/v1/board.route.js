@@ -9,7 +9,12 @@ Router.route('/')
     res.status(StatusCodes.OK).json({ message: 'Get API V1' })
   })
   .post(boardValidaton.createNew, boardController.createNew)
+
 Router.route('/:id')
   .get(boardController.getDetails)
-  .put()
+  .put(boardValidaton.update, boardController.update)
+
+Router.route('/supports/moving_card')
+  .put(boardValidaton.moveCardToDifferentColumn, boardController.moveCardToDifferentColumn)
+
 export const boardRoute = Router
