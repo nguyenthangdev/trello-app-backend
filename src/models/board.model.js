@@ -1,5 +1,5 @@
 import Joi from 'joi'
-import { ObjectId, ReturnDocument } from 'mongodb'
+import { ObjectId } from 'mongodb'
 import { GET_DB } from '~/config/mongodb'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 import { BOARD_TYPES } from '~/utils/constants'
@@ -19,6 +19,9 @@ const BOARD_COLLECTION_SCHEMA = Joi.object({
   updatedAt: Joi.date().timestamp('javascript').default(null),
   _destroy: Joi.boolean().default(false)
 })
+
+// Chỉ định ra những fields mà chúng ta không muốn cho phép cập nhật
+const INVALID_UPDATE_FIELDS = ['_id', 'createdAt']
 
 const validateBeforeCreate = async (data) => {
   return await BOARD_COLLECTION_SCHEMA.validateAsync(data, {
@@ -76,7 +79,28 @@ export const pushColumnOrderIds = async (column) => {
       { $push: { columnOrderIds: new ObjectId(String(column._id)) } },
       { returnDocument: 'after' }
     )
-    return result.value
+    return result
+  } catch (error) { throw new Error(error) }
+}
+
+export const update = async (boardId, updateData) => {
+  try {
+    Object.keys(updateData).forEach(fieldName => {
+      if (INVALID_UPDATE_FIELDS.includes(fieldName)) {
+        delete updateData[fieldName]
+      }
+    })
+
+    if (updateData.columnOrderIds) {
+      updateData.columnOrderIds = updateData.columnOrderIds.map(_id => (new ObjectId(String(_id))))
+    }
+
+    const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
+      { _id: new ObjectId(String(boardId)) },
+      { $set: updateData },
+      { returnDocument: 'after' }
+    )
+    return result
   } catch (error) { throw new Error(error) }
 }
 
@@ -86,5 +110,6 @@ export const boardModel = {
   createNew,
   fineOneById,
   getDetails,
-  pushColumnOrderIds
+  pushColumnOrderIds,
+  update
 }
