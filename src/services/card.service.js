@@ -7,7 +7,7 @@ const createNew = async (reqBody) => {
       ...reqBody
     }
     const createdCard = await cardModel.createNew(newCard)
-    const getNewCard = await cardModel.fineOneById(createdCard.insertedId)
+    const getNewCard = await cardModel.findOneById(createdCard.insertedId)
     if (getNewCard) {
       await columnModel.pushCardOrderIds(getNewCard)
     }

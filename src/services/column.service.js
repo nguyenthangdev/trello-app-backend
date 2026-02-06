@@ -10,7 +10,7 @@ const createNew = async (reqBody) => {
       ...reqBody
     }
     const createdColumn = await columnModel.createNew(newColumn)
-    const getNewColumn = await columnModel.fineOneById(createdColumn.insertedId)
+    const getNewColumn = await columnModel.findOneById(createdColumn.insertedId)
     if (getNewColumn) {
       getNewColumn.cards = []
       await boardModel.pushColumnOrderIds(getNewColumn)
@@ -33,7 +33,7 @@ const update = async (columnId, reqBody) => {
 
 const deleteItem = async (columnId) => {
   try {
-    const targetColumn = await columnModel.fineOneById(columnId)
+    const targetColumn = await columnModel.findOneById(columnId)
     if (!targetColumn) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Column not found!')
     }
@@ -41,7 +41,7 @@ const deleteItem = async (columnId) => {
     await cardModel.deleteManyByColumnId(columnId)
     await boardModel.pullColumnOrderIds(targetColumn)
 
-    return { deletedResult: 'Column and its Cards deleted successfully!'}
+    return { deletedResult: 'Column and its Cards deleted successfully!' }
   } catch (error) { throw error }
 }
 
