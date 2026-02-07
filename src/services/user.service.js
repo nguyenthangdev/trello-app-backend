@@ -40,7 +40,7 @@ const createNew = async (reqBody) => {
       subject: customSubject,
       html: htmlContent
     })
-    console.log('mailerSendProvider: ', data)
+    // console.log('mailerSendProvider: ', data)
     return pickUser(getNewUser)
   } catch (error) { throw error }
 }
@@ -74,6 +74,7 @@ const login = async (reqBody) => {
     const accessToken = await jwtProvider.generateToken(
       userInfo,
       env.JWT_ACCESS_TOKEN_SECRET_SIGNATURE,
+      // '5s' // 5s
       env.ACCESS_TOKEN_LIFE
     )
     const refreshToken = await jwtProvider.generateToken(
@@ -81,14 +82,31 @@ const login = async (reqBody) => {
       env.JWT_REFRESH_TOKEN_SECRET_SIGNATURE,
       env.REFRESH_TOKEN_LIFE
     )
-
     return { accessToken, refreshToken, ...pickUser(existUser) }
   } catch (error) { throw error }
 }
 
+const refreshToken = async (clientRefreshToken) => {
+  try {
+    const refreshTokenDecoded = await jwtProvider.verifyToken(clientRefreshToken, env.JWT_REFRESH_TOKEN_SECRET_SIGNATURE)
 
+    const userInfo = {
+      _id: refreshTokenDecoded._id,
+      email: refreshTokenDecoded.email
+    }
+
+    const accessToken = await jwtProvider.generateToken(
+      userInfo,
+      env.JWT_ACCESS_TOKEN_SECRET_SIGNATURE,
+      // '5s' // 5s
+      env.ACCESS_TOKEN_LIFE
+    )
+    return { accessToken }
+  } catch (error) { throw error }
+}
 export const userService = {
   createNew,
   verifyAccount,
-  login
+  login,
+  refreshToken
 }

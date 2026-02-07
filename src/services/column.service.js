@@ -26,7 +26,6 @@ const update = async (columnId, reqBody) => {
       updatedAt: Date.now()
     }
     const updatedColumn = await columnModel.update(columnId, updateData)
-
     return updatedColumn
   } catch (error) { throw error }
 }
@@ -40,7 +39,6 @@ const deleteItem = async (columnId) => {
     await columnModel.deleteOneById(columnId)
     await cardModel.deleteManyByColumnId(columnId)
     await boardModel.pullColumnOrderIds(targetColumn)
-
     return { deletedResult: 'Column and its Cards deleted successfully!' }
   } catch (error) { throw error }
 }

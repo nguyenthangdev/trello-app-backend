@@ -36,7 +36,6 @@ const createNew = async (data) => {
       boardId: new ObjectId(String(validData.boardId))
     }
     const getNewColumn = await GET_DB().collection(COLUMN_COLLECTION_NAME).insertOne(newValidData)
-
     return getNewColumn
   } catch (error) { throw new Error(error) }
 }
@@ -46,7 +45,6 @@ const findOneById = async (id) => {
     const result = await GET_DB().collection(COLUMN_COLLECTION_NAME).findOne({
       _id: new ObjectId(String(id))
     })
-
     return result
   } catch (error) { throw new Error(error) }
 }
@@ -58,7 +56,6 @@ export const pushCardOrderIds = async (card) => {
       { $push: { cardOrderIds: new ObjectId(String(card._id)) } },
       { returnDocument: 'after' }
     )
-
     return result
   } catch (error) { throw new Error(error) }
 }
@@ -80,7 +77,6 @@ export const update = async (columnId, updateData) => {
       { $set: updateData },
       { returnDocument: 'after' }
     )
-
     return result
   } catch (error) { throw new Error(error) }
 }
@@ -90,7 +86,6 @@ const deleteOneById = async (columnId) => {
     const result = await GET_DB().collection(COLUMN_COLLECTION_NAME).deleteOne({
       _id: new ObjectId(String(columnId))
     })
-
     return result
   } catch (error) { throw new Error(error) }
 }

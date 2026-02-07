@@ -32,7 +32,6 @@ const validateBeforeCreate = async (data) => {
 const createNew = async (data) => {
   try {
     const validData = await validateBeforeCreate(data)
-
     return await GET_DB().collection(BOARD_COLLECTION_NAME).insertOne(validData)
   } catch (error) { throw new Error(error) }
 }
@@ -42,7 +41,6 @@ const findOneById = async (id) => {
     const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOne({
       _id: new ObjectId(String(id))
     })
-
     return result
   } catch (error) { throw new Error(error) }
 }
@@ -70,7 +68,6 @@ const getDetails = async (boardId) => {
         as: 'cards'
       } }
     ]).toArray()
-
     return result[0] || null
   } catch (error) { throw new Error(error) }
 }
@@ -82,7 +79,6 @@ export const pushColumnOrderIds = async (column) => {
       { $push: { columnOrderIds: new ObjectId(String(column._id)) } },
       { returnDocument: 'after' }
     )
-
     return result
   } catch (error) { throw new Error(error) }
 }
@@ -94,7 +90,6 @@ export const pullColumnOrderIds = async (column) => {
       { $pull: { columnOrderIds: new ObjectId(String(column._id)) } },
       { returnDocument: 'after' }
     )
-
     return result
   } catch (error) { throw new Error(error) }
 }
@@ -116,7 +111,6 @@ export const update = async (boardId, updateData) => {
       { $set: updateData },
       { returnDocument: 'after' }
     )
-
     return result
   } catch (error) { throw new Error(error) }
 }

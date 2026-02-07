@@ -14,7 +14,6 @@ const createNew = async (reqBody) => {
     }
     const createdBoard = await boardModel.createNew(newBoard)
     const getNewBoard = await boardModel.findOneById(createdBoard.insertedId)
-
     return getNewBoard
   } catch (error) { throw error }
 }
@@ -28,7 +27,6 @@ const getDetails = async (boardId) => {
       column.cards = resBoard.cards.filter(card => card.columnId.toString() === column._id.toString())
     })
     delete resBoard.cards
-
     return resBoard
   } catch (error) { throw error }
 }
@@ -40,7 +38,6 @@ const update = async (boardId, reqBody) => {
       updatedAt: Date.now()
     }
     const updatedBoard = await boardModel.update(boardId, updateData)
-
     return updatedBoard
   } catch (error) { throw error }
 }
@@ -63,7 +60,6 @@ const moveCardToDifferentColumn = async (reqBody) => {
     await cardModel.update(reqBody.currentCardId, {
       columnId: reqBody.nextColumnId
     })
-
     return { updatedResult: 'Successfully' }
   } catch (error) { throw error }
 }
