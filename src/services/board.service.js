@@ -22,14 +22,13 @@ const createNew = async (reqBody) => {
 const getDetails = async (boardId) => {
   try {
     const board = await boardModel.getDetails(boardId)
-    if (!board) {
-      throw new ApiError(StatusCodes.NOT_FOUND, 'Board not found!')
-    }
+    if (!board) throw new ApiError(StatusCodes.NOT_FOUND, 'Board not found!')
     const resBoard = cloneDeep(board)
     resBoard.columns.forEach(column => {
       column.cards = resBoard.cards.filter(card => card.columnId.toString() === column._id.toString())
     })
     delete resBoard.cards
+
     return resBoard
   } catch (error) { throw error }
 }
@@ -64,6 +63,7 @@ const moveCardToDifferentColumn = async (reqBody) => {
     await cardModel.update(reqBody.currentCardId, {
       columnId: reqBody.nextColumnId
     })
+
     return { updatedResult: 'Successfully' }
   } catch (error) { throw error }
 }

@@ -5,14 +5,16 @@ import bcryptjs from 'bcryptjs'
 import { v4 as uuidv4 } from 'uuid'
 import { pickUser } from '~/utils/formatters'
 import { WEBSITE_DOMAIN } from '~/utils/constants'
-import { brevoProvider } from '~/providers/brevo.provider'
+// import { brevoProvider } from '~/providers/brevo.provider'
+import { mailerSendProvider } from '~/providers/mailerSend.provider'
+import { env } from '~/config/environment'
+import { jwtProvider } from '~/providers/jwt.provider'
 
 const createNew = async (reqBody) => {
   try {
     const existUser = await userModel.findOneByEmail(reqBody.email)
-    if (existUser) {
-      throw new ApiError(StatusCodes.CONFLICT, 'Email already exists!')
-    }
+    if (existUser) throw new ApiError(StatusCodes.CONFLICT, 'Email already exists!')
+
     const nameFromEmail = reqBody.email.split('@')[0]
     const newUser = {
       email: reqBody.email,
@@ -31,11 +33,62 @@ const createNew = async (reqBody) => {
       <h3>${verificationLink}</h3>
       <h3>Sincerely, <br/> - ThangNguyen - </h3>
     `
-    await brevoProvider.sendEmail(getNewUser.email, customSubject, htmlContent)
+    // await brevoProvider.sendEmail(getNewUser.email, customSubject, htmlContent)
+    const data = await mailerSendProvider.sendEmail({
+      to: getNewUser.email,
+      toName: process.env.ADMIN_SENDER_NAME,
+      subject: customSubject,
+      html: htmlContent
+    })
+    console.log('mailerSendProvider: ', data)
     return pickUser(getNewUser)
   } catch (error) { throw error }
 }
 
+const verifyAccount = async (reqBody) => {
+  try {
+    const existUser = await userModel.findOneByEmail(reqBody.email)
+    if (!existUser) throw new ApiError(StatusCodes.NOT_FOUND, 'Account not found!')
+    if (existUser.isActive) throw new ApiError(StatusCodes.NOT_ACCEPTABLE, 'Your account is already active!')
+    if (reqBody.token !== existUser.verifyToken) throw new ApiError(StatusCodes.NOT_ACCEPTABLE, 'Token is invalid!')
+
+    const updatedData = {
+      isActive: true,
+      verifyToken: null
+    }
+    const updatedUser = await userModel.update(existUser._id, updatedData)
+    return pickUser(updatedUser)
+  } catch (error) { throw error }
+}
+
+const login = async (reqBody) => {
+  try {
+    const existUser = await userModel.findOneByEmail(reqBody.email)
+    if (!existUser) throw new ApiError(StatusCodes.NOT_FOUND, 'Account not found!')
+    if (!existUser.isActive) throw new ApiError(StatusCodes.NOT_ACCEPTABLE, 'Your account is not active!')
+    if (!bcryptjs.compareSync(reqBody.password, existUser.password)) {
+      throw new ApiError(StatusCodes.NOT_ACCEPTABLE, 'Your Email or Password is incorrect!')
+    }
+    const userInfo = { _id: existUser._id, email: existUser.email }
+
+    const accessToken = await jwtProvider.generateToken(
+      userInfo,
+      env.JWT_ACCESS_TOKEN_SECRET_SIGNATURE,
+      env.ACCESS_TOKEN_LIFE
+    )
+    const refreshToken = await jwtProvider.generateToken(
+      userInfo,
+      env.JWT_REFRESH_TOKEN_SECRET_SIGNATURE,
+      env.REFRESH_TOKEN_LIFE
+    )
+
+    return { accessToken, refreshToken, ...pickUser(existUser) }
+  } catch (error) { throw error }
+}
+
+
 export const userService = {
-  createNew
+  createNew,
+  verifyAccount,
+  login
 }

@@ -33,6 +33,7 @@ const createNew = async (data) => {
       boardId: new ObjectId(String(validData.boardId)),
       columnId: new ObjectId(String(validData.columnId))
     }
+
     return await GET_DB().collection(CARD_COLLECTION_NAME).insertOne(newValidData)
   } catch (error) { throw new Error(error) }
 }
@@ -42,6 +43,7 @@ const findOneById = async (id) => {
     const result = await GET_DB().collection(CARD_COLLECTION_NAME).findOne({
       _id: new ObjectId(String(id))
     })
+
     return result
   } catch (error) { throw new Error(error) }
 }
@@ -61,6 +63,7 @@ export const update = async (cardId, updateData) => {
       { $set: updateData },
       { returnDocument: 'after' }
     )
+
     return result
   } catch (error) { throw new Error(error) }
 }
@@ -70,6 +73,7 @@ const deleteManyByColumnId = async (columnId) => {
     const result = await GET_DB().collection(CARD_COLLECTION_NAME).deleteMany({
       columnId: new ObjectId(String(columnId))
     })
+
     return result
   } catch (error) { throw new Error(error) }
 }
