@@ -12,3 +12,6 @@ export const BOARD_TYPES = {
 }
 
 export const WEBSITE_DOMAIN = env.BUILD_MODE === 'production' ? env.WEBSITE_DOMAIN_PRODUCTION : env.WEBSITE_DOMAIN_DEVELOPMENT
+
+export const ALLOW_COMMON_FILE_TYPES = ['image/jpg', 'image/jpeg', 'image/png']
+export const LIMIT_COMMON_FILE_SIZE = 10485760 // byte = 10 MB

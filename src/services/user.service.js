@@ -9,6 +9,7 @@ import { WEBSITE_DOMAIN } from '~/utils/constants'
 import { mailerSendProvider } from '~/providers/mailerSend.provider'
 import { env } from '~/config/environment'
 import { jwtProvider } from '~/providers/jwt.provider'
+import { cloudinaryProvider } from '~/providers/cloudinary.provider'
 
 const createNew = async (reqBody) => {
   try {
@@ -105,7 +106,7 @@ const refreshToken = async (clientRefreshToken) => {
   } catch (error) { throw error }
 }
 
-const update = async (userId, reqBody) => {
+const update = async (userId, reqBody, userAvatarFile) => {
   try {
     const existUser = await userModel.findOneById(userId)
     if (!existUser) throw new ApiError(StatusCodes.NOT_FOUND, 'Account not found!')
@@ -116,8 +117,17 @@ const update = async (userId, reqBody) => {
       if (!bcryptjs.compareSync(reqBody.current_password, existUser.password)) {
         throw new ApiError(StatusCodes.NOT_ACCEPTABLE, 'Your current password is incorrect!')
       }
-      updatedUser = await userModel.update(userId, {
+      updatedUser = await userModel.update(existUser._id, {
         password: bcryptjs.hashSync(reqBody.new_password, 8)
+      })
+    } else if (userAvatarFile) {
+      // Trường hợp upload file lên Cloud Storage, cụ thể là Cloudinary
+      const uploadResult = await cloudinaryProvider.streamUpload(userAvatarFile.buffer, 'users')
+      // console.log('uploadResult: ', uploadResult)
+
+      // Lưu lại url (secure_url) của cái file ảnh vào trong DB
+      updatedUser = await userModel.update(existUser._id, {
+        avatar: uploadResult.secure_url
       })
     } else {
       // Trường hợp update các thông tin chung ví dụ displayName
