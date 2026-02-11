@@ -10,9 +10,7 @@ const createNew = async (req, res, next) => {
   })
 
   try {
-    await correctCondition.validateAsync(req.body, {
-      abortEarly: false
-    })
+    await correctCondition.validateAsync(req.body, { abortEarly: false })
     next()
     // res.status(StatusCodes.CREATED).json({ message: 'Create API V1' })
   } catch (error) {
@@ -27,9 +25,7 @@ const verifyAccount = async (req, res, next) => {
   })
 
   try {
-    await correctCondition.validateAsync(req.body, {
-      abortEarly: false
-    })
+    await correctCondition.validateAsync(req.body, { abortEarly: false })
     next()
   } catch (error) {
     next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
@@ -43,9 +39,7 @@ const login = async (req, res, next) => {
   })
 
   try {
-    await correctCondition.validateAsync(req.body, {
-      abortEarly: false
-    })
+    await correctCondition.validateAsync(req.body, { abortEarly: false })
     next()
   } catch (error) {
     next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))

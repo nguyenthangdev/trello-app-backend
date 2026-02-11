@@ -10,6 +10,7 @@ const createNew = async (reqBody) => {
       ...reqBody
     }
     const createdColumn = await columnModel.createNew(newColumn)
+    console.log('createdColumn: ', createdColumn)
     const getNewColumn = await columnModel.findOneById(createdColumn.insertedId)
     if (getNewColumn) {
       getNewColumn.cards = []
