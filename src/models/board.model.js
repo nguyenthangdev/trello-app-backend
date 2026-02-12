@@ -3,10 +3,10 @@ import { ObjectId } from 'mongodb'
 import { GET_DB } from '~/config/mongodb'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 import { BOARD_TYPES } from '~/utils/constants'
-import { columnModel } from '~/models/column.model'
-import { cardModel } from '~/models/card.model'
+import { columnModel } from './column.model'
+import { cardModel } from './card.model'
 import { pagingSkipValue } from '~/utils/algorithms'
-import { userModel } from '~/models/user.model'
+import { userModel } from './user.model'
 
 const BOARD_COLLECTION_NAME = 'boards'
 const BOARD_COLLECTION_SCHEMA = Joi.object({
@@ -122,6 +122,17 @@ const pushColumnOrderIds = async (column) => {
   } catch (error) { throw new Error(error) }
 }
 
+const pushMemberIds = async (boardId, userId) => {
+  try {
+    const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
+      { _id: new ObjectId(String(boardId)) },
+      { $push: { memberIds: new ObjectId(String(userId)) } },
+      { returnDocument: 'after' }
+    )
+    return result
+  } catch (error) { throw new Error(error) }
+}
+
 const pullColumnOrderIds = async (column) => {
   try {
     const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
@@ -154,7 +165,7 @@ const update = async (boardId, updateData) => {
   } catch (error) { throw new Error(error) }
 }
 
-const getBoards = async (userId, page, itemsPerPage) => {
+const getBoards = async (userId, page, itemsPerPage, queryFilters) => {
   try {
     const queryConditions = [
       { _destroy: false },
@@ -163,6 +174,17 @@ const getBoards = async (userId, page, itemsPerPage) => {
         { memberIds: { $all: [new ObjectId(String(userId))] } }
       ] }
     ]
+
+    // Xử lý query flter cho từng trường hợp search board, ví dụ search theo title
+    if (queryFilters) {
+      Object.keys(queryFilters).forEach(key => {
+        // Có phân biệt hoa thường
+        // queryConditions.push({ [key]: { $regex: queryFilters[key] } })
+        // Không phân biệt hoa thường
+        queryConditions.push({ [key]: { $regex: new RegExp(queryFilters[key], 'i') } })
+      })
+    }
+    console.log('queryConditions: ', queryConditions)
 
     const query = await GET_DB().collection(BOARD_COLLECTION_NAME).aggregate(
       [
@@ -201,5 +223,6 @@ export const boardModel = {
   pushColumnOrderIds,
   update,
   pullColumnOrderIds,
-  getBoards
+  getBoards,
+  pushMemberIds
 }

@@ -49,7 +49,7 @@ const findOneById = async (columnId) => {
   } catch (error) { throw new Error(error) }
 }
 
-export const pushCardOrderIds = async (card) => {
+const pushCardOrderIds = async (card) => {
   try {
     const result = await GET_DB().collection(COLUMN_COLLECTION_NAME).findOneAndUpdate(
       { _id: new ObjectId(String(card.columnId)) },
@@ -60,7 +60,7 @@ export const pushCardOrderIds = async (card) => {
   } catch (error) { throw new Error(error) }
 }
 
-export const update = async (columnId, updateData) => {
+const update = async (columnId, updateData) => {
   try {
     Object.keys(updateData).forEach(fieldName => {
       if (INVALID_UPDATE_FIELDS.includes(fieldName)) {
