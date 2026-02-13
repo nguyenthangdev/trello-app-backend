@@ -3,7 +3,6 @@ import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 import { ObjectId } from 'mongodb'
 import { GET_DB } from '~/config/mongodb'
 
-// Define Collection (name & schema)
 const COLUMN_COLLECTION_NAME = 'columns'
 const COLUMN_COLLECTION_SCHEMA = Joi.object({
   boardId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
@@ -36,6 +35,7 @@ const createNew = async (data) => {
       boardId: new ObjectId(String(validData.boardId))
     }
     const getNewColumn = await GET_DB().collection(COLUMN_COLLECTION_NAME).insertOne(newValidData)
+
     return getNewColumn
   } catch (error) { throw new Error(error) }
 }
@@ -45,6 +45,7 @@ const findOneById = async (columnId) => {
     const result = await GET_DB().collection(COLUMN_COLLECTION_NAME).findOne({
       _id: new ObjectId(String(columnId))
     })
+
     return result
   } catch (error) { throw new Error(error) }
 }
@@ -56,27 +57,29 @@ const pushCardOrderIds = async (card) => {
       { $push: { cardOrderIds: new ObjectId(String(card._id)) } },
       { returnDocument: 'after' }
     )
+
     return result
   } catch (error) { throw new Error(error) }
 }
 
-const update = async (columnId, updateData) => {
+const update = async (columnId, updatedData) => {
   try {
-    Object.keys(updateData).forEach(fieldName => {
+    Object.keys(updatedData).forEach(fieldName => {
       if (INVALID_UPDATE_FIELDS.includes(fieldName)) {
-        delete updateData[fieldName]
+        delete updatedData[fieldName]
       }
     })
 
-    if (updateData.cardOrderIds) {
-      updateData.cardOrderIds = updateData.cardOrderIds.map(_id => (new ObjectId(String(_id))))
+    if (updatedData.cardOrderIds) {
+      updatedData.cardOrderIds = updatedData.cardOrderIds.map(_id => (new ObjectId(String(_id))))
     }
 
     const result = await GET_DB().collection(COLUMN_COLLECTION_NAME).findOneAndUpdate(
       { _id: new ObjectId(String(columnId)) },
-      { $set: updateData },
+      { $set: updatedData },
       { returnDocument: 'after' }
     )
+
     return result
   } catch (error) { throw new Error(error) }
 }
@@ -86,6 +89,7 @@ const deleteOneById = async (columnId) => {
     const result = await GET_DB().collection(COLUMN_COLLECTION_NAME).deleteOne({
       _id: new ObjectId(String(columnId))
     })
+
     return result
   } catch (error) { throw new Error(error) }
 }

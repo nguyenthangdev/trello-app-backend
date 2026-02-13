@@ -34,6 +34,7 @@ const createNewBoardInvitation = async (inviterId, reqBody) => {
       inviter: pickUser(inviter),
       invitee: pickUser(invitee)
     }
+
     return resInvitation
   } catch (error) { throw error }
 }
@@ -47,6 +48,7 @@ const getInvitations = async (userId) => {
       inviter: i.inviter[0] || {},
       invitee: i.invitee[0] || {}
     }))
+
     return resInvitations
   } catch (error) { throw error }
 }
@@ -54,16 +56,19 @@ const getInvitations = async (userId) => {
 const updateBoardInvitation = async (userId, invitationId, status) => {
   try {
     const getInvitation = await invitationModel.findOneById(invitationId)
+
     if (!getInvitation) {
       throw new ApiError(StatusCodes.NOT_FOUND, 'Invitation not found!')
     }
 
     const boardId = getInvitation.boardInvitation.boardId
     const getBoard = await boardModel.findOneById(boardId)
+
     if (!getBoard) throw new ApiError(StatusCodes.NOT_FOUND, 'Board not found!')
 
     // Kiểm tra xem nếu status là ACCEPTED join board mà thằng user (invitee) đã là owner hoặc member của board rồi thì trả về thông báo lỗi luôn.
     const boardOwnerAndMemberIds = [...getBoard.ownerIds, ...getBoard.memberIds].toString()
+
     if (status === BOARD_INVITATION_STATUS.ACCEPTED && boardOwnerAndMemberIds.includes(userId)) {
       throw new ApiError(StatusCodes.NOT_ACCEPTABLE, 'You are already a member of this board!')
     }
@@ -77,9 +82,11 @@ const updateBoardInvitation = async (userId, invitationId, status) => {
     }
 
     const updatedInvitation = await invitationModel.update(invitationId, updateData)
+
     if (updatedInvitation.boardInvitation.status === BOARD_INVITATION_STATUS.ACCEPTED) {
       await boardModel.pushMemberIds(boardId, userId)
     }
+
     return updatedInvitation
   } catch (error) { throw error }
 }

@@ -22,7 +22,7 @@ const CARD_COLLECTION_SCHEMA = Joi.object({
     userAvatar: Joi.string(),
     userDisplayName: Joi.string(),
     content: Joi.string(),
-    // Lưu ý ví dùng hàm $push để thêm comment nên không set default Date.now luôn giống hàm insertOne khi create được.
+    // Lưu ý vì dùng hàm $push để thêm comment nên không set default Date.now luôn giống hàm insertOne khi create được.
     commentedAt: Joi.date().timestamp()
   }).default([]),
 
@@ -48,6 +48,7 @@ const createNew = async (data) => {
       boardId: new ObjectId(String(validData.boardId)),
       columnId: new ObjectId(String(validData.columnId))
     }
+
     return await GET_DB().collection(CARD_COLLECTION_NAME).insertOne(newValidData)
   } catch (error) { throw new Error(error) }
 }
@@ -57,6 +58,7 @@ const findOneById = async (cardId) => {
     const result = await GET_DB().collection(CARD_COLLECTION_NAME).findOne({
       _id: new ObjectId(String(cardId))
     })
+
     return result
   } catch (error) { throw new Error(error) }
 }
@@ -76,6 +78,7 @@ const update = async (cardId, updateData) => {
       { $set: updateData },
       { returnDocument: 'after' }
     )
+
     return result
   } catch (error) { throw new Error(error) }
 }
@@ -85,17 +88,12 @@ const deleteManyByColumnId = async (columnId) => {
     const result = await GET_DB().collection(CARD_COLLECTION_NAME).deleteMany({
       columnId: new ObjectId(String(columnId))
     })
+
     return result
   } catch (error) { throw new Error(error) }
 }
 
-/**
- * Đẩy 1 phần tử comment vào đầu mảng comments:
- * Trong JS, ngược lại với push (thêm phần tử vào cuối mảng) sẽ là unshift (thêm phần tử vào đầu mảng)
- * Nhưng trong mogodb hiện tại chỉ có $push - mặc định đẩy phần tử vào cuối mảng
- * Dĩ nhiên cứ lưu comment mới vào cuối mảng cũng được, nhưng nay sẽ học cách để lưu phần tử vào đầu mảng trong mongodb
- * Vẫn dùng $push, nhưng bọc data vào Array để trong $each và chỉ định $position: 0
- */
+// push vào đầu mảng
 const unShiftNewComment = async (cardId, commentData) => {
   try {
     const result = await GET_DB().collection(CARD_COLLECTION_NAME).findOneAndUpdate(
@@ -103,6 +101,7 @@ const unShiftNewComment = async (cardId, commentData) => {
       { $push: { comments: { $each: [commentData], $position: 0 } } },
       { returnDocument: 'after' }
     )
+
     return result
   } catch (error) { throw new Error(error) }
 }
@@ -110,17 +109,21 @@ const unShiftNewComment = async (cardId, commentData) => {
 const updateMembers = async (cardId, incomingMemberInfo) => {
   try {
     let updateCondition = {}
+
     if (incomingMemberInfo.action === CARD_MEMBER_ACTIONS.ADD) {
       updateCondition = { $push: { memberIds: new ObjectId(String(incomingMemberInfo.userId)) } }
     }
+
     if (incomingMemberInfo.action === CARD_MEMBER_ACTIONS.REMOVE) {
       updateCondition = { $pull: { memberIds: new ObjectId(String(incomingMemberInfo.userId)) } }
     }
+
     const result = await GET_DB().collection(CARD_COLLECTION_NAME).findOneAndUpdate(
       { _id: new ObjectId(String(cardId)) },
       updateCondition,
       { returnDocument: 'after' }
     )
+
     return result
   } catch (error) { throw new Error(error) }
 }

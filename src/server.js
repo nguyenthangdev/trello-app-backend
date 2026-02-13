@@ -22,7 +22,6 @@ const START_SERVER = () => {
 
   app.use(cookieParser())
 
-  // Xử lý cors
   app.use(cors(corsOptions))
 
   // Enable req.body json data

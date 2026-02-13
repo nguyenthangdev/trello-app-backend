@@ -15,6 +15,7 @@ const createNew = async (userId, reqBody) => {
     }
     const createdBoard = await boardModel.createNew(userId, newBoard)
     const getNewBoard = await boardModel.findOneById(createdBoard.insertedId)
+
     return getNewBoard
   } catch (error) { throw error }
 }
@@ -22,23 +23,28 @@ const createNew = async (userId, reqBody) => {
 const getDetails = async (userId, boardId) => {
   try {
     const board = await boardModel.getDetails(userId, boardId)
+
     if (!board) throw new ApiError(StatusCodes.NOT_FOUND, 'Board not found!')
+
     const resBoard = cloneDeep(board)
     resBoard.columns.forEach(column => {
       column.cards = resBoard.cards.filter(card => card.columnId.toString() === column._id.toString())
     })
+
     delete resBoard.cards
+
     return resBoard
   } catch (error) { throw error }
 }
 
 const update = async (boardId, reqBody) => {
   try {
-    const updateData = {
+    const updatedData = {
       ...reqBody,
       updatedAt: Date.now()
     }
-    const updatedBoard = await boardModel.update(boardId, updateData)
+    const updatedBoard = await boardModel.update(boardId, updatedData)
+
     return updatedBoard
   } catch (error) { throw error }
 }
@@ -61,6 +67,7 @@ const moveCardToDifferentColumn = async (reqBody) => {
     await cardModel.update(reqBody.currentCardId, {
       columnId: reqBody.nextColumnId
     })
+
     return { updatedResult: 'Successfully' }
   } catch (error) { throw error }
 }
@@ -69,12 +76,14 @@ const getBoards = async (userId, page, itemsPerPage, queryFilters) => {
   try {
     if (!page) page = DEFAULT_PAGE
     if (!itemsPerPage) itemsPerPage = DEFAULT_ITEMS_PER_PAGE
+
     const result = await boardModel.getBoards(
       userId,
       parseInt(page, 10),
       parseInt(itemsPerPage, 10),
       queryFilters
     )
+
     return result
   } catch (error) { throw error }
 }

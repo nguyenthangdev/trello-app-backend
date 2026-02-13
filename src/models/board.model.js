@@ -11,20 +11,19 @@ import { userModel } from './user.model'
 const BOARD_COLLECTION_NAME = 'boards'
 const BOARD_COLLECTION_SCHEMA = Joi.object({
   title: Joi.string().required().min(3).max(50).trim().strict(),
-  slug: Joi.string().required().min(3).trim().strict(),
   description: Joi.string().required().min(3).max(256).trim().strict(),
   type: Joi.string().valid(...Object.values(BOARD_TYPES)).required(),
+
+  slug: Joi.string().required().min(3).trim().strict(),
 
   columnOrderIds: Joi.array().items(
     Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
   ).default([]),
 
-  // Những Admin của cái boards
   ownerIds: Joi.array().items(
     Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
   ).default([]),
 
-  // Những thành viên của boards
   memberIds: Joi.array().items(
     Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
   ).default([]),
@@ -50,6 +49,7 @@ const createNew = async (userId, data) => {
       ...validData,
       ownerIds: [new ObjectId(String(userId))]
     }
+
     return await GET_DB().collection(BOARD_COLLECTION_NAME).insertOne(newBoardToAdd)
   } catch (error) { throw new Error(error) }
 }
@@ -59,15 +59,13 @@ const findOneById = async (boardId) => {
     const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOne({
       _id: new ObjectId(String(boardId))
     })
+
     return result
   } catch (error) { throw new Error(error) }
 }
 
 const getDetails = async (userId, boardId) => {
   try {
-    // const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOne({
-    //   _id: new ObjectId(String(boardId))
-    // })
     const queryConditions = [
       { _id: new ObjectId(String(boardId)) },
       { _destroy: false },
@@ -107,6 +105,7 @@ const getDetails = async (userId, boardId) => {
         pipeline: [{ $project: { 'password': 0, 'verifyToken': 0 } }]
       } }
     ]).toArray()
+
     return result[0] || null
   } catch (error) { throw new Error(error) }
 }
@@ -118,6 +117,7 @@ const pushColumnOrderIds = async (column) => {
       { $push: { columnOrderIds: new ObjectId(String(column._id)) } },
       { returnDocument: 'after' }
     )
+
     return result
   } catch (error) { throw new Error(error) }
 }
@@ -129,6 +129,7 @@ const pushMemberIds = async (boardId, userId) => {
       { $push: { memberIds: new ObjectId(String(userId)) } },
       { returnDocument: 'after' }
     )
+
     return result
   } catch (error) { throw new Error(error) }
 }
@@ -140,27 +141,29 @@ const pullColumnOrderIds = async (column) => {
       { $pull: { columnOrderIds: new ObjectId(String(column._id)) } },
       { returnDocument: 'after' }
     )
+
     return result
   } catch (error) { throw new Error(error) }
 }
 
-const update = async (boardId, updateData) => {
+const update = async (boardId, updatedData) => {
   try {
-    Object.keys(updateData).forEach(fieldName => {
+    Object.keys(updatedData).forEach(fieldName => {
       if (INVALID_UPDATE_FIELDS.includes(fieldName)) {
-        delete updateData[fieldName]
+        delete updatedData[fieldName]
       }
     })
 
-    if (updateData.columnOrderIds) {
-      updateData.columnOrderIds = updateData.columnOrderIds.map(_id => (new ObjectId(String(_id))))
+    if (updatedData.columnOrderIds) {
+      updatedData.columnOrderIds = updatedData.columnOrderIds.map(_id => (new ObjectId(String(_id))))
     }
 
     const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
       { _id: new ObjectId(String(boardId)) },
-      { $set: updateData },
+      { $set: updatedData },
       { returnDocument: 'after' }
     )
+
     return result
   } catch (error) { throw new Error(error) }
 }
@@ -178,13 +181,10 @@ const getBoards = async (userId, page, itemsPerPage, queryFilters) => {
     // Xử lý query flter cho từng trường hợp search board, ví dụ search theo title
     if (queryFilters) {
       Object.keys(queryFilters).forEach(key => {
-        // Có phân biệt hoa thường
-        // queryConditions.push({ [key]: { $regex: queryFilters[key] } })
         // Không phân biệt hoa thường
         queryConditions.push({ [key]: { $regex: new RegExp(queryFilters[key], 'i') } })
       })
     }
-    console.log('queryConditions: ', queryConditions)
 
     const query = await GET_DB().collection(BOARD_COLLECTION_NAME).aggregate(
       [
@@ -196,7 +196,7 @@ const getBoards = async (userId, page, itemsPerPage, queryFilters) => {
         // Luồng 1: Query boards
           'queryBoards': [
             { $skip: pagingSkipValue(page, itemsPerPage) }, // Bỏ qua số lượng bản ghi của những page trước đó.
-            { $limit: itemsPerPage } // Giới hạn tối đa số lượng bản ghi trả về trên 1 page.
+            { $limit: itemsPerPage }
           ],
 
           // Luồng 2: Query đếm tổng tất cả số  lượng bản ghi boards trong DB và trả về vào biến countedAllBoards.
@@ -206,7 +206,9 @@ const getBoards = async (userId, page, itemsPerPage, queryFilters) => {
       // Khai báo thêm thuộc tính collation locale 'en' để fix vụ chữ B hoa và chữ a thường ở trên.
       { collation: { locale: 'en' } }
     ).toArray()
+
     const res = query[0]
+
     return {
       boards: res.queryBoards || [],
       totalBoards: res.queryTotalBoards[0]?.countedAllBoards || 0

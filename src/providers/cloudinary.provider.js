@@ -11,7 +11,7 @@ cloudinary.config({
 // Khởi tạo 1 cái function để thực hiện upload file lên Cloudinary
 const streamUpload = (fileBuffer, folderName) => {
   return new Promise((resolve, reject) => {
-    // Tạo 1 cái luồng stream upload lên cloudinary
+    // Tạo 1 cái luồng stream upload lên cloudinary vào thư mục folder
     const stream = cloudinary.uploader.upload_stream({ folder: folderName }, (error, result) => {
       if (result) resolve(result)
       else reject(error)

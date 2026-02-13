@@ -32,6 +32,7 @@ const createNew = async (data) => {
   try {
     const validData = await validateBeforeCreate(data)
     const createdUser = await GET_DB().collection(USER_COLLECTION_NAME).insertOne(validData)
+
     return createdUser
   } catch (error) { throw new Error(error) }
 }
@@ -41,6 +42,7 @@ const findOneById = async (userId) => {
     const result = await GET_DB().collection(USER_COLLECTION_NAME).findOne({
       _id: new ObjectId(String(userId))
     })
+
     return result
   } catch (error) { throw new Error(error) }
 }
@@ -48,6 +50,7 @@ const findOneById = async (userId) => {
 const findOneByEmail = async (emailValue) => {
   try {
     const result = await GET_DB().collection(USER_COLLECTION_NAME).findOne({ email: emailValue })
+
     return result
   } catch (error) { throw new Error(error) }
 }
@@ -65,6 +68,7 @@ const update = async (userId, updateData) => {
       { $set: updateData },
       { returnDocument: 'after' }
     )
+
     return result
   } catch (error) { throw new Error(error) }
 }

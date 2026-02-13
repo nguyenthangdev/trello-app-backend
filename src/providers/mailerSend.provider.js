@@ -46,6 +46,7 @@ const sendEmail = async ({ to, toName, subject, html }) => {
       // .setBcc(bcc)
 
     const data = await mailerSendInstance.email.send(emailParams)
+
     return data
   } catch (error) {
     console.error('MailerSend Error: ', error)

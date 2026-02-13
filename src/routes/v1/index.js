@@ -1,20 +1,17 @@
 import express from 'express'
-import { StatusCodes } from 'http-status-codes'
 import { boardRoute } from './board.route'
 import { columnRoute } from './column.route'
 import { cardRoute } from './card.route'
 import { userRoute } from './user.route'
 import { invitationRoute } from './invitation.route'
+import { authMiddleware } from '~/middlewares/auth.middleware'
 
 const Router = express.Router()
 
-Router.get('/status', (req, res) => {
-  res.status(StatusCodes.OK).json({ message: 'API V1' })
-})
-Router.use('/boards', boardRoute)
-Router.use('/columns', columnRoute)
-Router.use('/cards', cardRoute)
+Router.use('/boards', authMiddleware.isAuthorized, boardRoute)
+Router.use('/columns', authMiddleware.isAuthorized, columnRoute)
+Router.use('/cards', authMiddleware.isAuthorized, cardRoute)
 Router.use('/users', userRoute)
-Router.use('/invitations', invitationRoute)
+Router.use('/invitations', authMiddleware.isAuthorized, invitationRoute)
 
 export const APIs_V1 = Router

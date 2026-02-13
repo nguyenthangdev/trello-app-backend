@@ -40,6 +40,7 @@ const createNewBoardInvitation = async (data) => {
       inviterId: new ObjectId(String(validData.inviterId)),
       inviteeId: new ObjectId(String(validData.inviteeId))
     }
+
     // Nếu tồn tại dữ liệu boardInvitation thì update cho cái boardId
     if (validData.boardInvitation) {
       newInvitationToAdd.boardInvitation = {
@@ -47,7 +48,9 @@ const createNewBoardInvitation = async (data) => {
         boardId: new ObjectId(String(validData.boardInvitation.boardId))
       }
     }
+
     const createdInvitation = await GET_DB().collection(INVITATION_COLLECTION_NAME).insertOne(newInvitationToAdd)
+
     return createdInvitation
   } catch (error) { throw new Error(error) }
 }
@@ -57,6 +60,7 @@ const findOneById = async (invitationId) => {
     const result = await GET_DB().collection(INVITATION_COLLECTION_NAME).findOne({
       _id: new ObjectId(String(invitationId))
     })
+
     return result
   } catch (error) { throw new Error(error) }
 }
@@ -81,6 +85,7 @@ const update = async (invitationId, updateData) => {
       { $set: updateData },
       { returnDocument: 'after' }
     )
+
     return result
   } catch (error) { throw new Error(error) }
 }
@@ -115,6 +120,7 @@ const findByUser = async (userId) => {
         as: 'board'
       } }
     ]).toArray()
+
     return results
   } catch (error) { throw new Error(error) }
 }

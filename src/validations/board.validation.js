@@ -6,27 +6,14 @@ import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 
 const createNew = async (req, res, next) => {
   const correctCondition = Joi.object({
-    title: Joi.string().required().min(3).max(50).trim().strict().messages({
-      'any.required': 'Title is required',
-      'string.empty': 'Title is not allowed to be empty',
-      'string.min': 'Title length must be at least 3 characters long',
-      'string.max': 'Title length must be less than or equal to 50 characters long',
-      'string.trim': 'Title must not have leading or trailing whitespace'
-    }),
-    description: Joi.string().required().min(3).max(256).trim().strict().messages({
-      'any.required': 'Description is required',
-      'string.empty': 'Description is not allowed to be empty',
-      'string.min': 'Description length must be at least 3 characters long',
-      'string.max': 'Description length must be less than or equal to 256 characters long',
-      'string.trim': 'Description must not have leading or trailing whitespace'
-    }),
+    title: Joi.string().required().min(3).max(50).trim().strict(),
+    description: Joi.string().required().min(3).max(256).trim().strict(),
     type: Joi.string().valid(...Object.values(BOARD_TYPES)).required()
   })
 
   try {
     await correctCondition.validateAsync(req.body, { abortEarly: false })
     next()
-    // res.status(StatusCodes.CREATED).json({ message: 'Create API V1' })
   } catch (error) {
     next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
   }
@@ -34,11 +21,7 @@ const createNew = async (req, res, next) => {
 
 const update = async (req, res, next) => {
   const correctCondition = Joi.object({
-    title: Joi.string().min(3).max(50).trim().strict().messages({
-      'string.min': 'Title length must be at least 3 characters long',
-      'string.max': 'Title length must be less than or equal to 50 characters long',
-      'string.trim': 'Title must not have leading or trailing whitespace'
-    }),
+    title: Joi.string().min(3).max(50).trim().strict(),
     description: Joi.string().optional(),
     type: Joi.string().valid(...Object.values(BOARD_TYPES))
   })
@@ -49,7 +32,6 @@ const update = async (req, res, next) => {
       allowUnknown: true
     })
     next()
-    // res.status(StatusCodes.CREATED).json({ message: 'Create API V1' })
   } catch (error) {
     next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
   }
@@ -60,11 +42,13 @@ const moveCardToDifferentColumn = async (req, res, next) => {
     currentCardId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
 
     prevColumnId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
+
     prevCardOrderIds: Joi.array().required().items(
       Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
     ),
 
     nextColumnId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
+
     nextCardOrderIds: Joi.array().required().items(
       Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
     )
@@ -73,7 +57,6 @@ const moveCardToDifferentColumn = async (req, res, next) => {
   try {
     await correctCondition.validateAsync(req.body, { abortEarly: false })
     next()
-    // res.status(StatusCodes.CREATED).json({ message: 'Create API V1' })
   } catch (error) {
     next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
   }

@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { userModel } from '~/models/user.model'
 import ApiError from '~/utils/ApiError'
 import { StatusCodes } from 'http-status-codes'
@@ -49,8 +50,11 @@ const createNew = async (reqBody) => {
 const verifyAccount = async (reqBody) => {
   try {
     const existUser = await userModel.findOneByEmail(reqBody.email)
+
     if (!existUser) throw new ApiError(StatusCodes.NOT_FOUND, 'Account not found!')
+
     if (existUser.isActive) throw new ApiError(StatusCodes.NOT_ACCEPTABLE, 'Your account is already active!')
+
     if (reqBody.token !== existUser.verifyToken) throw new ApiError(StatusCodes.NOT_ACCEPTABLE, 'Token is invalid!')
 
     const updatedData = {
@@ -58,6 +62,7 @@ const verifyAccount = async (reqBody) => {
       verifyToken: null
     }
     const updatedUser = await userModel.update(existUser._id, updatedData)
+
     return pickUser(updatedUser)
   } catch (error) { throw error }
 }
@@ -65,11 +70,15 @@ const verifyAccount = async (reqBody) => {
 const login = async (reqBody) => {
   try {
     const existUser = await userModel.findOneByEmail(reqBody.email)
+
     if (!existUser) throw new ApiError(StatusCodes.NOT_FOUND, 'Account not found!')
+
     if (!existUser.isActive) throw new ApiError(StatusCodes.NOT_ACCEPTABLE, 'Your account is not active!')
+
     if (!bcryptjs.compareSync(reqBody.password, existUser.password)) {
       throw new ApiError(StatusCodes.NOT_ACCEPTABLE, 'Your Email or Password is incorrect!')
     }
+
     const userInfo = { _id: existUser._id, email: existUser.email }
 
     const accessToken = await jwtProvider.generateToken(
@@ -83,6 +92,7 @@ const login = async (reqBody) => {
       env.JWT_REFRESH_TOKEN_SECRET_SIGNATURE,
       env.REFRESH_TOKEN_LIFE
     )
+
     return { accessToken, refreshToken, ...pickUser(existUser) }
   } catch (error) { throw error }
 }
@@ -102,6 +112,7 @@ const refreshToken = async (clientRefreshToken) => {
       // '5s' // 5s
       env.ACCESS_TOKEN_LIFE
     )
+
     return { accessToken }
   } catch (error) { throw error }
 }
@@ -109,10 +120,13 @@ const refreshToken = async (clientRefreshToken) => {
 const update = async (userId, reqBody, userAvatarFile) => {
   try {
     const existUser = await userModel.findOneById(userId)
+
     if (!existUser) throw new ApiError(StatusCodes.NOT_FOUND, 'Account not found!')
+
     if (!existUser.isActive) throw new ApiError(StatusCodes.NOT_ACCEPTABLE, 'Your account is not active!')
 
     let updatedUser = {}
+
     if (reqBody.current_password && reqBody.new_password) {
       if (!bcryptjs.compareSync(reqBody.current_password, existUser.password)) {
         throw new ApiError(StatusCodes.NOT_ACCEPTABLE, 'Your current password is incorrect!')
@@ -133,6 +147,7 @@ const update = async (userId, reqBody, userAvatarFile) => {
       // Trường hợp update các thông tin chung ví dụ displayName
       updatedUser = await userModel.update(userId, reqBody)
     }
+
     return pickUser(updatedUser)
   } catch (error) { throw error }
 }

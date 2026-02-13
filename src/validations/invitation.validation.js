@@ -11,7 +11,6 @@ const createNewBoardInvitation = async (req, res, next) => {
   try {
     await correctCondition.validateAsync(req.body, { abortEarly: false })
     next()
-    // res.status(StatusCodes.CREATED).json({ message: 'Create API V1' })
   } catch (error) {
     next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
   }

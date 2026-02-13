@@ -6,19 +6,12 @@ import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 const createNew = async (req, res, next) => {
   const correctCondition = Joi.object({
     boardId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
-    title: Joi.string().required().min(3).max(50).trim().strict().messages({
-      'any.required': 'Title is required',
-      'string.empty': 'Title is not allowed to be empty',
-      'string.min': 'Title length must be at least 3 characters long',
-      'string.max': 'Title length must be less than or equal to 50 characters long',
-      'string.trim': 'Title must not have leading or trailing whitespace'
-    })
+    title: Joi.string().required().min(3).max(50).trim().strict()
   })
 
   try {
     await correctCondition.validateAsync(req.body, { abortEarly: false })
     next()
-    // res.status(StatusCodes.CREATED).json({ message: 'Create API V1' })
   } catch (error) {
     next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
   }
@@ -28,11 +21,7 @@ const update = async (req, res, next) => {
   const correctCondition = Joi.object({
     // Làm tính năng di chuyển column sang board khác thì mới cần validate boardId
     // boardId: Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
-    title: Joi.string().min(3).max(50).trim().strict().messages({
-      'string.min': 'Title length must be at least 3 characters long',
-      'string.max': 'Title length must be less than or equal to 50 characters long',
-      'string.trim': 'Title must not have leading or trailing whitespace'
-    })
+    title: Joi.string().min(3).max(50).trim().strict()
   })
 
   try {
@@ -41,7 +30,6 @@ const update = async (req, res, next) => {
       allowUnknown: true
     })
     next()
-    // res.status(StatusCodes.CREATED).json({ message: 'Create API V1' })
   } catch (error) {
     next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
   }
@@ -55,7 +43,6 @@ const deleteItem = async (req, res, next) => {
   try {
     await correctCondition.validateAsync(req.params)
     next()
-    // res.status(StatusCodes.CREATED).json({ message: 'Create API V1' })
   } catch (error) {
     next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
   }
